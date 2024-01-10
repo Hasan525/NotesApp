@@ -1,15 +1,14 @@
 package com.hasan.notesapp.features.notes.ui.screens
 
-import android.icu.text.CaseMap.Title
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -18,6 +17,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -32,15 +33,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
+import androidx.compose.ui.Alignment.Companion.TopEnd
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.hasan.notesapp.R
 import com.hasan.notesapp.data.model.NotesResponse
 import com.hasan.notesapp.ui.theme.Background
 import com.hasan.notesapp.ui.theme.ContentColor
@@ -54,10 +56,22 @@ fun NotesScreen() {
         mutableStateOf("")
     }
 
+    var title by remember {
+        mutableStateOf("")
+    }
+
+    var description by remember {
+        mutableStateOf("")
+    }
+
+    var isAddDialog by remember {
+        mutableStateOf(false)
+    }
+
     Scaffold(floatingActionButton = {
         FloatingActionButton(onClick = {
-
-        }, modifier = Modifier.background(Color.Red)) {
+            isAddDialog = true
+        }) {
             Icon(imageVector = Icons.Default.Add, contentDescription = "", tint = Color.White)
         }
     }) { paddingValues ->
@@ -72,29 +86,82 @@ fun NotesScreen() {
             }, modifier = Modifier.padding(start = 15.dp, end = 15.dp, top = 50.dp))
         }
     }
+
+    if (isAddDialog) {
+        ShowDialogBox(
+            title = title,
+            description = description,
+            onTitleChange = {
+                title = it
+            },
+            onDescriptionChange = {
+                description = it
+            },
+            onClose = {
+                isAddDialog = it
+            }
+        ) {
+
+        }
+    }
 }
 
 
 @Composable
-fun showDialogBox(
+fun ShowDialogBox(
     title: String,
     description: String,
     onTitleChange: (String) -> Unit,
-    onDescriptionChange: (String) -> Unit
+    onDescriptionChange: (String) -> Unit,
+    onClose: (Boolean) -> Unit,
+    onClick: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = { /*TODO*/ },
-        confirmButton = { /*TODO*/ },
-        shape = RoundedCornerShape(16.dp),
-        modifier = Modifier
-            .background(Background),
-        text = {
-            IconButton(
+        confirmButton = {
+            Button(
                 onClick = {
-                    /*TODO*/
-                }
+                    onClick()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(15.dp),
+                colors = ButtonDefaults.buttonColors(
+                    contentColor = Color.White
+                ),
+                contentPadding = PaddingValues(vertical = 15.dp)
             ) {
-                Icon(imageVector = Icons.Default.Close, contentDescription = "", tint = Red)
+                Text(text = stringResource(R.string.save))
+            }
+        },
+        shape = RoundedCornerShape(16.dp),
+        title = {
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = TopEnd) {
+                IconButton(
+                    onClick = {
+                        onClose(false)
+                    }
+                ) {
+                    Icon(imageVector = Icons.Default.Close, contentDescription = "", tint = Red)
+                }
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier.padding(horizontal = 10.dp)
+            ) {
+                AppTextField(
+                    text = title,
+                    placeholder = stringResource(R.string.hey),
+                    onValueChange = onTitleChange
+                )
+                Spacer(modifier = Modifier.height(15.dp))
+                AppTextField(
+                    text = description,
+                    placeholder = stringResource(R.string.hey),
+                    onValueChange = onDescriptionChange,
+                    modifier = Modifier.height(300.dp)
+                )
             }
         }
     )
